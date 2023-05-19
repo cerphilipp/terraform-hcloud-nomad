@@ -12,7 +12,7 @@ module "consul_server" {
   for_each = local.consul_servers_map
 
   server_name             = each.value.hostname
-  public_ipv4             = false
+  public_ipv4             = var.only_public_ipv4_adresses ? true : false
   firewall_ids            = [hcloud_firewall.firewall.id]
   ssh_key_ids             = [hcloud_ssh_key.nomad_server_root_sshkey.id]
   datacenter              = each.value.datacenter

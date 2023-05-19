@@ -58,6 +58,12 @@ variable "nomad_first_client_on_server" {
   default     = false
 }
 
+variable "only_public_ipv4_adresses" {
+ type = bool
+ description = "If false some servers will use a public ipv6 address, may cause connection issues and break the module" 
+ default = true
+}
+
 variable "ssh_public_key" {
   type        = string
   description = "SSH pubic key for nomad servers"

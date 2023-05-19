@@ -18,16 +18,17 @@ resource "hcloud_server" "host" {
   ssh_keys     = var.ssh_key_ids
   firewall_ids = var.firewall_ids
   public_net {
-    ipv4_enabled = false
-    ipv6_enabled = true
-    ipv6         = hcloud_primary_ip.public_ip.id
+    ipv4_enabled = var.public_ipv4
+    ipv6_enabled = ! var.public_ipv4
+    ipv4 = var.public_ipv4 ? hcloud_primary_ip.public_ip.id : null
+    ipv6 = var.public_ipv4 ? null : hcloud_primary_ip.public_ip.id
   }
 
   connection {
     user        = "root"
     type        = "ssh"
     timeout     = "15m"
-    host        = self.ipv6_address
+    host        = var.public_ipv4 ? self.ipv4_address : self.ipv6_address
     private_key = var.ssh_private_key
   }
 
