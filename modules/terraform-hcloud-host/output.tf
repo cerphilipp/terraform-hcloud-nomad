@@ -19,6 +19,11 @@ output "primary_ip_id" {
   value       = hcloud_primary_ip.public_ip.id
 }
 
+output "labels" {
+  description = "Labels applied to server"
+  value = hcloud_server.host.labels
+}
+
 output "is_ipv4" {
   description = "True if primary ipv4; False if primary ipv6"
   value       = var.public_ipv4

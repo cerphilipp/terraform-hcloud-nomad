@@ -6,8 +6,8 @@ domain = "${consul_domain}"
 tls {
    defaults {
       ca_file = "/etc/consul.d/certs/${consul_domain}-agent-ca.pem"
-      cert_file = "/etc/consul.d/certs/${consul_dc}-server-${consul_domain}-0.pem"
-      key_file = "/etc/consul.d/certs/${consul_dc}-server-${consul_domain}-0-key.pem"
+      cert_file = "/etc/consul.d/certs/${consul_dc}-server-${consul_domain}-${index}.pem"
+      key_file = "/etc/consul.d/certs/${consul_dc}-server-${consul_domain}-${index}-key.pem"
 
       verify_incoming = true
       verify_outgoing = true

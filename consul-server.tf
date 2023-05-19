@@ -21,29 +21,64 @@ module "consul_server" {
   server_type             = var.consul_server_type
   setup_commands   = local.common_setup_commands
   ssh_private_key         = var.ssh_private_key
+
 }
 
 #--------------------------------------------------------------------
 # RESOURCES
 #--------------------------------------------------------------------
 
-#ToDo
-# resource "null_resource" "consul_server_setup" {
+resource "null_resource" "consul_ca_setup" {
 
-#   for_each = local.consul_leader_servers_map
+  count = var.consul_server_count > 0 ? 1 : 0
 
-#   depends_on = [ module.consul_server, module.nomad_server, module.nomad_client ]
+  depends_on = [ module.consul_server, module.nomad_server, module.nomad_client ]
 
-#   connection {
-#     host =  module.consul_server.public_ip
-#     private_key = var.ssh_private_key
-#     user = "root"
-#     type = "ssh"
-#     timeout = "10m"
-#   }
+  connection {
+    host =  module.consul_server[0].public_ip
+    private_key = var.ssh_private_key
+    user = "root"
+    type = "ssh"
+    timeout = "10m"
+  }
 
-#   provisioner "file" {
-#     destination = "/root/.ssh/ssh2.key"
-#     content = var.ssh_private_key
-#   }
-# }
+  provisioner "file" {
+    destination = local.ssh_private_key_copy_path
+    content = var.ssh_private_key
+  }
+
+  provisioner "file" {
+    destination = local.setup_consul_leader_script_path
+    content = templatefile("${path.module}/scripts/setup-consul-cluster.sh.tpl", 
+    { 
+      clusters = local.clusters, 
+      consul_domain = var.consul_domain, 
+      ssh_private_key_file = local.ssh_private_key_copy_path,
+      consul_agents_ips = local.consul_agents_ips
+      dir = local.consul_setup_folder
+    })
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x ${local.setup_consul_leader_script_path}",
+      "sed -i -e 's/\r$//' ${local.setup_consul_leader_script_path}",
+      "${local.setup_consul_leader_script_path}",
+    ]
+  }
+}
+
+resource "null_resource" "consul_server_setup" {
+  
+  for_each = var.consul_server_count > 0 ? local.consul_servers_map : {}
+
+  depends_on = [ null_resource.consul_ca_setup ]
+
+  connection {
+    host =  each.key.public_ip
+    private_key = var.ssh_private_key
+    user = "root"
+    type = "ssh"
+    timeout = "10m"
+  }
+}

@@ -40,10 +40,10 @@ variable "server_type" {
   description = "Cloud server type"
 }
 
-variable "is_consul_server" {
-  type = bool
-  description = "Is server a consul server"
-  default = false
+variable "labels" {
+  type = map(string)
+  description = "Labels to apply the server"
+  default = {}
 }
 
 variable "setup_commands" {
