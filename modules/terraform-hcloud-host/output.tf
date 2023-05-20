@@ -1,3 +1,8 @@
+output "hcloud_id" {
+  description = "Host hcloud id"
+  value = hcloud_server.host.id
+}
+
 output "hostname" {
   description = "Hostname of the created server"
   value       = hcloud_server.host.name
@@ -21,7 +26,7 @@ output "primary_ip_id" {
 
 output "labels" {
   description = "Labels applied to server"
-  value = hcloud_server.host.labels
+  value = var.labels
 }
 
 output "is_ipv4" {

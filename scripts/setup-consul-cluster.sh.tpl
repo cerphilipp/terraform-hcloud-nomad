@@ -2,9 +2,9 @@
 set -euo pipefail
 
 chmod 700 ${ssh_private_key_file}
-#exec ssh-agent bash
 eval $(ssh-agent)
 ssh-add ${ssh_private_key_file}
+ssh-keyscan -H "127.0.0.1" > /root/.ssh/known_hosts
 
 [[ -d ${dir} ]] && rm -r ${dir}
 mkdir ${dir}

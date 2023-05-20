@@ -42,7 +42,7 @@ variable "server_type" {
 
 variable "labels" {
   type = map(string)
-  description = "Labels to apply the server"
+  description = "Labels for module output"
   default = {}
 }
 

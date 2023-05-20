@@ -64,30 +64,46 @@ locals {
   consul_servers = flatten( [for c in local.clusters : c.consul_servers])
   consul_servers_map = {for i in range(length(local.consul_servers)) : i => local.consul_servers[i]}
   consul_agents_ips = concat([ for s in local.nomad_servers : s.private_ip ], [ for c in local.nomad_clients : c.private_ip ])
-  do_consul_setup = var.consul_server_count > 0 ? 1 : 0
+  consul_cluster_server_ips = [ for c in local.clusters :  "[ ${join(",", [for s in c.consul_servers : "\"${s.private_ip}\""])} ]" ]
 
 # File paths
 tmp_folder = "/tmp/terraform-hcloud-nomad/"
 script_folder = "${local.tmp_folder}scripts"
 setup_consul_leader_script_path = "${local.script_folder}setup-consul-cluster.sh"
+edit_consul_config_script_path = "${local.script_folder}edit-consul-config.sh"
 
 consul_setup_folder = "${local.tmp_folder}consul-setup"
 ssh_private_key_copy_path = "/root/.ssh/terraform-hcloud-nomad.key"
 
-#Inline commands
-  common_setup_commands = [
-    "yum update -y -q",
-    "yum install -y -q yum-utils",
-    "yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo",
-    "yum -y -q install consul",
-    "mkdir --parents /etc/consul.d",
-    "touch /etc/consul.d/consul.hcl",
-    "chown --recursive consul:consul /etc/consul.d",
-    "chmod 640 /etc/consul.d/consul.hcl",
-    "mkdir /etc/consul.d/certs",
-    "mkdir ${local.tmp_folder}",
-    "mkdir ${local.script_folder}",
-    "mkdir ${local.consul_setup_folder}"
-  ]
+# Trigger strings
 
+#Inline commands
+setup_commands = var.consul_server_count > 0 ? concat(local.common_setup_commands, local.common_consul_commands) : local.common_setup_commands
+
+common_setup_commands = [
+  "yum install -y -q yum-utils",
+  "yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo",
+  "mkdir ${local.tmp_folder}",
+  "mkdir ${local.script_folder}",
+]
+
+common_consul_commands = [
+  "yum -y -q install consul",
+  "mkdir --parents /etc/consul.d",
+  "touch /etc/consul.d/consul.hcl",
+  "chown --recursive consul:consul /etc/consul.d",
+  "chmod 640 /etc/consul.d/consul.hcl",
+  "mkdir /etc/consul.d/certs",
+]
+
+consul_server_commands = [
+  "touch /etc/consul.d/server.hcl",
+  "chown --recursive consul:consul /etc/consul.d",
+  "chmod 640 /etc/consul.d/server.hcl",
+]
+
+consul_agents_setup_commands = [
+  "sed -i 's/\\//\\\\\\//g' /etc/consul.d/certs/consul.key",
+  "sed -i -e \"s/<consul.key>/$(cat /etc/consul.d/certs/consul.key)/\" /etc/consul.d/consul.hcl"
+]
 }

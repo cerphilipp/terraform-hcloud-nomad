@@ -1,9 +1,9 @@
 datacenter = "${consul_dc}"
 data_dir = "/opt/consul"
-encrypt = <consul.key>
+encrypt = "<consul.key>"
 domain = "${consul_domain}"
 
-retry_join = ${consle_server_ips}
+retry_join = ${consul_server_ips}
 
 tls {
    defaults {

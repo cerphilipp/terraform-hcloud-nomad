@@ -1,6 +1,6 @@
 datacenter = "${consul_dc}"
 data_dir = "/opt/consul"
-encrypt = <consul.key>
+encrypt = "<consul.key>"
 domain = "${consul_domain}"
 
 tls {

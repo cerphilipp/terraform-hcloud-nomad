@@ -61,7 +61,7 @@ variable "nomad_client_type" {
 variable "nomad_first_client_on_server" {
   type        = bool
   description = "If true the first nomad client will be installed on the nomad server machine"
-  default     = true #false
+  default     = false
 }
 
 variable "only_public_ipv4_adresses" {
