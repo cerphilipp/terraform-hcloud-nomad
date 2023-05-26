@@ -17,16 +17,16 @@ variable "cluster_locations" {
 }
 
 variable "consul_domain" {
-  type = string
+  type        = string
   description = "Domain of the consul servers"
-  default = "consul"
+  default     = "consul"
 }
 
 variable "consul_server_count" {
-  type = number
+  type        = number
   description = "Number of consul servers per cluster"
-  default = 3#1
-}   
+  default     = 3 #1
+}
 
 variable "consul_server_type" {
   type        = string
@@ -37,7 +37,7 @@ variable "consul_server_type" {
 variable "nomad_server_count" {
   type        = number
   description = "Number of nomad servers per cluster"
-  default     = 1#3
+  default     = 1 #3
 }
 
 variable "nomad_server_type" {
@@ -65,9 +65,9 @@ variable "nomad_first_client_on_server" {
 }
 
 variable "only_public_ipv4_adresses" {
- type = bool
- description = "If false some servers will use a public ipv6 address, may cause connection issues and break the module" 
- default = false #true
+  type        = bool
+  description = "If false some servers will use a public ipv6 address, may cause connection issues and break the module"
+  default     = false #true
 }
 
 variable "ssh_public_key" {

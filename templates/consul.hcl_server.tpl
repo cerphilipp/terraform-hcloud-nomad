@@ -3,6 +3,8 @@ data_dir = "/opt/consul"
 encrypt = "<consul.key>"
 domain = "${consul_domain}"
 
+retry_join = ${consul_server_ips}
+
 tls {
    defaults {
       ca_file = "/etc/consul.d/certs/${consul_domain}-agent-ca.pem"

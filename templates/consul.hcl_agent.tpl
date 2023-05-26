@@ -2,6 +2,7 @@ datacenter = "${consul_dc}"
 data_dir = "/opt/consul"
 encrypt = "<consul.key>"
 domain = "${consul_domain}"
+bind_addr = "${private_ip}"
 
 retry_join = ${consul_server_ips}
 
