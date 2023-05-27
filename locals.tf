@@ -29,6 +29,7 @@ locals {
       prefix            = local.cluster_prefix[i],
       ip_range          = local.cluster_ip_ranges[i],
       consul_datacenter = local.cluster_prefix[i],
+      nomad_region      = local.cluster_prefix[i],
       consul_servers = [for j in range(var.consul_server_count) :
         {
           cluster_index = i,
@@ -67,13 +68,15 @@ locals {
   consul_cluster_server_ips = [for c in local.clusters : "[ ${join(",", [for s in c.consul_servers : "\"${s.private_ip}\""])} ]"]
 
   # File paths
-  tmp_folder                      = "/tmp/terraform-hcloud-nomad/"
-  script_folder                   = "${local.tmp_folder}scripts"
-  setup_consul_leader_script_path = "${local.script_folder}setup-consul-cluster.sh"
-  edit_consul_config_script_path  = "${local.script_folder}edit-consul-config.sh"
-  set_consul_envs_script_path     = "${local.script_folder}set-consul-envs.sh"
+  tmp_folder                       = "/tmp/terraform-hcloud-nomad/"
+  script_folder                    = "${local.tmp_folder}scripts/"
+  setup_consul_cluster_script_path = "${local.script_folder}setup-consul-cluster.sh"
+  edit_consul_config_script_path   = "${local.script_folder}edit-consul-config.sh"
+  set_consul_envs_script_path      = "${local.script_folder}set-consul-envs.sh"
+  setup_nomad_ca_script_path       = "${local.script_folder}setup-nomad-ca.sh"
 
   consul_setup_folder       = "${local.tmp_folder}consul-setup"
+  nomad_setup_folder        = "${local.tmp_folder}nomad-setup"
   ssh_private_key_copy_path = "/root/.ssh/terraform-hcloud-nomad.key"
 
   # Trigger strings
@@ -107,6 +110,13 @@ locals {
     "consul validate /etc/consul.d/",
     "systemctl enable consul",
     "systemctl start consul",
-    "systemctl is-active --quiet consul"
+    "systemctl is-active --quiet consul",
+  ]
+
+  common_nomad_commands = [
+    "yum -y -q install nomad",
+    "mkdir --parents /etc/nomad.d",
+    "chmod 700 /etc/nomad.d",
+    "mkdir /etc/nomad.d/certs",
   ]
 }

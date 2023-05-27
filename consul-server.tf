@@ -52,7 +52,7 @@ resource "null_resource" "consul_ca_setup" {
   }
 
   provisioner "file" {
-    destination = local.setup_consul_leader_script_path
+    destination = local.setup_consul_cluster_script_path
     content = templatefile("${path.module}/scripts/setup-consul-cluster.sh.tpl",
       {
         clusters             = local.clusters,
@@ -65,9 +65,10 @@ resource "null_resource" "consul_ca_setup" {
 
   provisioner "remote-exec" {
     inline = [
-      "chmod +x ${local.setup_consul_leader_script_path}",
-      "sed -i -e 's/\r$//' ${local.setup_consul_leader_script_path}",
-      "${local.setup_consul_leader_script_path}",
+      "chmod +x ${local.setup_consul_cluster_script_path}",
+      "sed -i -e 's/\r$//' ${local.setup_consul_cluster_script_path}",
+      "${local.setup_consul_cluster_script_path}",
+      "rm -f ${local.ssh_private_key_copy_path}"
     ]
   }
 }
@@ -97,9 +98,9 @@ resource "null_resource" "consul_server_setup" {
     destination = "/etc/consul.d/consul.hcl"
     content = templatefile("${path.module}/templates/consul.hcl_server.tpl",
       {
-        consul_dc     = local.clusters[each.value.cluster_index].consul_datacenter,
-        consul_domain = var.consul_domain,
-        index         = each.value.local_index
+        consul_dc         = local.clusters[each.value.cluster_index].consul_datacenter,
+        consul_domain     = var.consul_domain,
+        index             = each.value.local_index
         consul_server_ips = local.consul_cluster_server_ips[each.value.cluster_index]
     })
   }
@@ -115,7 +116,7 @@ resource "null_resource" "consul_server_setup" {
 
   provisioner "file" {
     destination = "/usr/lib/systemd/system/consul.service"
-    content = file("${path.module}/templates/consul.service")
+    content     = file("${path.module}/templates/consul.service")
   }
 
   provisioner "file" {

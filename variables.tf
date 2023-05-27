@@ -25,7 +25,7 @@ variable "consul_domain" {
 variable "consul_server_count" {
   type        = number
   description = "Number of consul servers per cluster"
-  default     = 3 #1
+  default     = 1
 }
 
 variable "consul_server_type" {
@@ -37,7 +37,7 @@ variable "consul_server_type" {
 variable "nomad_server_count" {
   type        = number
   description = "Number of nomad servers per cluster"
-  default     = 1 #3
+  default     = 1#3
 }
 
 variable "nomad_server_type" {
