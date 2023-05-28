@@ -12,13 +12,14 @@ cd ${dir}
 
 nomad tls ca create
 nomad tls cert create -cli
+nomad operator gossip keyring generate > gossip.key
 
 %{ for cluster in clusters ~}
 nomad tls cert create -server -cluster-region ${cluster.nomad_region}
 nomad tls cert create -client -cluster-region ${cluster.nomad_region}
 %{ for s in cluster.servers ~}
 ssh-keyscan -H ${s.private_ip} >> /root/.ssh/known_hosts
-scp nomad-agent-ca.pem ${cluster.nomad_region}-server-nomad.pem ${cluster.nomad_region}-server-nomad-key.pem root@${s.private_ip}:/etc/nomad.d/certs
+scp gossip.key nomad-agent-ca.pem ${cluster.nomad_region}-server-nomad.pem ${cluster.nomad_region}-server-nomad-key.pem root@${s.private_ip}:/etc/nomad.d/certs
 %{ if client_on_server_node ~}
 scp ${cluster.nomad_region}-client-nomad.pem ${cluster.nomad_region}-client-nomad-key.pem root@${s.private_ip}:/etc/nomad.d/certs
 %{ endif ~}

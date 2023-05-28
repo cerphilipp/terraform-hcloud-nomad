@@ -43,13 +43,13 @@ module "nomad_client" {
 resource "null_resource" "nomad_ca_setup" {
 
   triggers = {
-    nomad_server_ids = join(",", [ for s in module.nomad_server : s.hcloud_id ])
-    nomad_server_ips = join(",", [ for s in module.nomad_server : s.private_ipv4 ]),
-    nomad_client_ids = join(",", [ for c in module.nomad_client : c.hcloud_id ]),
-    nomad_client_ips = join(",", [ for c in module.nomad_client : c.private_ipv4 ]),
+    nomad_server_ids = join(",", [for s in module.nomad_server : s.hcloud_id])
+    nomad_server_ips = join(",", [for s in module.nomad_server : s.private_ipv4]),
+    nomad_client_ids = join(",", [for c in module.nomad_client : c.hcloud_id]),
+    nomad_client_ips = join(",", [for c in module.nomad_client : c.private_ipv4]),
   }
 
-  depends_on = [ module.nomad_server, module.nomad_client ]
+  depends_on = [module.nomad_server, module.nomad_client]
 
   connection {
     host        = module.nomad_server[0].public_ip

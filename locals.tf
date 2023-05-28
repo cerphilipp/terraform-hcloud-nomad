@@ -66,6 +66,7 @@ locals {
   consul_servers_map        = { for i in range(length(local.consul_servers)) : i => local.consul_servers[i] }
   consul_agents_ips         = concat([for s in local.nomad_servers : s.private_ip], [for c in local.nomad_clients : c.private_ip])
   consul_cluster_server_ips = [for c in local.clusters : "[ ${join(",", [for s in c.consul_servers : "\"${s.private_ip}\""])} ]"]
+  nomad_cluster_server_ips  = [for c in local.clusters : "[ ${join(",", [for s in c.servers : "\"${s.private_ip}\""])}]"]
 
   # File paths
   tmp_folder                       = "/tmp/terraform-hcloud-nomad/"
@@ -74,6 +75,7 @@ locals {
   edit_consul_config_script_path   = "${local.script_folder}edit-consul-config.sh"
   set_consul_envs_script_path      = "${local.script_folder}set-consul-envs.sh"
   setup_nomad_ca_script_path       = "${local.script_folder}setup-nomad-ca.sh"
+  replace_in_file_script_path      = "${local.script_folder}replace-in-file.sh"
 
   consul_setup_folder       = "${local.tmp_folder}consul-setup"
   nomad_setup_folder        = "${local.tmp_folder}nomad-setup"
@@ -118,5 +120,11 @@ locals {
     "mkdir --parents /etc/nomad.d",
     "chmod 700 /etc/nomad.d",
     "mkdir /etc/nomad.d/certs",
+  ]
+
+  nomad_start_commands = [
+    "systemctl enable nomad",
+    "systemctl start nomad",
+    "systemctl is-active --quiet nomad",
   ]
 }
