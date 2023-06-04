@@ -15,7 +15,7 @@ module "nomad_server" {
   subnet_id       = hcloud_network_subnet.subnets[each.value.cluster_index].id
   private_ip      = each.value.private_ip
   server_type     = var.nomad_server_type
-  setup_commands  = concat(local.setup_commands, local.common_nomad_commands)
+  setup_commands  = local.nomad_server_setup_commands
   ssh_private_key = var.ssh_private_key
 }
 
@@ -36,7 +36,7 @@ module "nomad_client" {
   subnet_id       = hcloud_network_subnet.subnets[each.value.cluster_index].id
   private_ip      = each.value.private_ip
   server_type     = var.nomad_client_type
-  setup_commands  = concat(local.setup_commands, local.common_nomad_commands)
+  setup_commands  = local.nomad_client_setup_commands
   ssh_private_key = var.ssh_private_key
 }
 

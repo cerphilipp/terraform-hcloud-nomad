@@ -86,6 +86,9 @@ locals {
   #Inline commands
   setup_commands = var.consul_server_count > 0 ? concat(local.common_setup_commands, local.common_consul_commands) : local.common_setup_commands
 
+  nomad_server_setup_commands = var.nomad_first_client_on_server ? concat(local.setup_commands, local.common_nomad_commands, local.nomad_client_commands) : concat(local.setup_commands, local.common_nomad_commands)
+  nomad_client_setup_commands = concat(local.setup_commands, local.common_nomad_commands, local.nomad_client_commands)
+
   common_setup_commands = [
     "yum install -y -q yum-utils",
     "yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo",
@@ -120,6 +123,13 @@ locals {
     "mkdir --parents /etc/nomad.d",
     "chmod 700 /etc/nomad.d",
     "mkdir /etc/nomad.d/certs",
+  ]
+
+  nomad_client_commands = [
+    "yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo",
+    "yum install -y -q docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin",
+    "systemctl start docker",
+    "systemctl is-active --quiet docker",
   ]
 
   nomad_start_commands = [

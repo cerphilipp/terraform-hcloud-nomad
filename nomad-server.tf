@@ -35,7 +35,7 @@ resource "null_resource" "nomad_server_setup" {
         server_count     = var.nomad_server_count
         nomad_server_ips = local.nomad_cluster_server_ips[each.value.cluster_index]
         nomad_region     = local.clusters[each.value.cluster_index].nomad_region
-        private_ip = each.value.private_ip
+        private_ip       = each.value.private_ip
     })
   }
 
