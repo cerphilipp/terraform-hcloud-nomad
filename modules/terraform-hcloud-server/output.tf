@@ -1,6 +1,6 @@
 output "hcloud_id" {
   description = "Host hcloud id"
-  value = hcloud_server.host.id
+  value       = hcloud_server.host.id
 }
 
 output "hostname" {
@@ -24,12 +24,12 @@ output "primary_ip_id" {
   value       = hcloud_primary_ip.public_ip.id
 }
 
-output "labels" {
-  description = "Labels applied to server"
-  value = var.labels
-}
-
 output "is_ipv4" {
   description = "True if primary ipv4; False if primary ipv6"
   value       = var.public_ipv4
+}
+
+output "cloudinit_yml" {
+  description = "Applied cloudinit yml"
+  value       = local.cloudinit_yml
 }

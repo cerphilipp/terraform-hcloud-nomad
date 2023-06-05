@@ -75,8 +75,14 @@ variable "ssh_public_key" {
   description = "SSH pubic key for nomad servers"
 }
 
-variable "ssh_private_key" {
+variable "ssh_private_key_file" {
   type        = string
-  description = "SSH private key for ssh access"
+  description = "File with SSH private key"
+  sensitive   = true
+}
+
+variable "cert_ssh_private_key_file" {
+  type        = string
+  description = "SSH private key file to sign the certificates"
   sensitive   = true
 }

@@ -11,6 +11,9 @@ locals {
   os_image                    = "centos-stream-8"
   datacenter_location_mapping = { for location in data.hcloud_datacenters.ds.datacenters : location.location.name => location.name }
   network_cidr                = "10.0.0.0/8"
+  ssh_private_key             = file(var.ssh_private_key_file)
+  cert_ssh_private_key        = file(var.cert_ssh_private_key_file)
+  consul                      = var.consul_server_count > 0
 
   #Description of clusters
   cluster_location  = [for i in range(var.nomad_cluster_count) : var.cluster_locations[i % length(var.cluster_locations)]]
@@ -37,6 +40,7 @@ locals {
           hostname      = "${local.cluster_prefix[i]}-consul-server-${j}",
           datacenter    = lookup(local.datacenter_location_mapping, local.cluster_location[i]),
           private_ip    = cidrhost(hcloud_network_subnet.subnets[i].ip_range, 1 + j),
+          certname      = "${local.cluster_prefix[i]}-server-${var.consul_domain}-${j}"
       }]
       servers = [for j in range(var.nomad_server_count) :
         {
@@ -68,73 +72,24 @@ locals {
   consul_cluster_server_ips = [for c in local.clusters : "[ ${join(",", [for s in c.consul_servers : "\"${s.private_ip}\""])} ]"]
   nomad_cluster_server_ips  = [for c in local.clusters : "[ ${join(",", [for s in c.servers : "\"${s.private_ip}\""])}]"]
 
-  # File paths
-  tmp_folder                       = "/tmp/terraform-hcloud-nomad/"
-  script_folder                    = "${local.tmp_folder}scripts/"
-  setup_consul_cluster_script_path = "${local.script_folder}setup-consul-cluster.sh"
-  edit_consul_config_script_path   = "${local.script_folder}edit-consul-config.sh"
-  set_consul_envs_script_path      = "${local.script_folder}set-consul-envs.sh"
-  setup_nomad_ca_script_path       = "${local.script_folder}setup-nomad-ca.sh"
-  replace_in_file_script_path      = "${local.script_folder}replace-in-file.sh"
-
-  consul_setup_folder       = "${local.tmp_folder}consul-setup"
-  nomad_setup_folder        = "${local.tmp_folder}nomad-setup"
-  ssh_private_key_copy_path = "/root/.ssh/terraform-hcloud-nomad.key"
-
-  # Trigger strings
-
-  #Inline commands
-  setup_commands = var.consul_server_count > 0 ? concat(local.common_setup_commands, local.common_consul_commands) : local.common_setup_commands
-
-  nomad_server_setup_commands = var.nomad_first_client_on_server ? concat(local.setup_commands, local.common_nomad_commands, local.nomad_client_commands) : concat(local.setup_commands, local.common_nomad_commands)
-  nomad_client_setup_commands = concat(local.setup_commands, local.common_nomad_commands, local.nomad_client_commands)
-
-  common_setup_commands = [
-    "yum install -y -q yum-utils",
-    "yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo",
-    "mkdir ${local.tmp_folder}",
-    "mkdir ${local.script_folder}",
-  ]
-
-  common_consul_commands = [
-    "yum -y -q install consul",
-    "mkdir --parents /etc/consul.d",
-    "touch /etc/consul.d/consul.hcl",
-    "chown --recursive consul:consul /etc/consul.d",
-    "chmod 640 /etc/consul.d/consul.hcl",
-    "mkdir /etc/consul.d/certs",
-  ]
-
-  consul_server_commands = [
-    "touch /etc/consul.d/server.hcl",
-    "chown --recursive consul:consul /etc/consul.d",
-    "chmod 640 /etc/consul.d/server.hcl",
-  ]
-
+  consul_packages = ["consul"]
   consul_start_commands = [
-    "consul validate /etc/consul.d/",
-    "systemctl enable consul",
-    "systemctl start consul",
-    "systemctl is-active --quiet consul",
+    "[systemctl, enable, consul]",
+    "[systemctl, start, consul]"
   ]
-
-  common_nomad_commands = [
-    "yum -y -q install nomad",
-    "mkdir --parents /etc/nomad.d",
-    "chmod 700 /etc/nomad.d",
-    "mkdir /etc/nomad.d/certs",
-  ]
-
-  nomad_client_commands = [
-    "yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo",
-    "yum install -y -q docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin",
-    "systemctl start docker",
-    "systemctl is-active --quiet docker",
-  ]
-
+  nomad_packages = ["nomad"]
   nomad_start_commands = [
-    "systemctl enable nomad",
-    "systemctl start nomad",
-    "systemctl is-active --quiet nomad",
+    "[systemctl, enable, nomad]",
+    "[systemctl, start, nomad]"
   ]
+  docker_packages = ["docker-ce", "docker-ce-cli", "containerd.io", "docker-buildx-plugin", "docker-compose-plugin"]
+
+  #cloudinit consul
+  consul_server_packages = local.consul_packages
+  consul_server_commands = local.consul_start_commands
+  nomad_client_packages  = concat(local.consul ? local.consul_packages : [], local.docker_packages, local.nomad_packages)
+  nomad_client_commands  = concat(local.consul ? local.consul_start_commands : [], local.nomad_start_commands)
+  nomad_server_packages  = concat(local.consul ? local.consul_packages : [], var.nomad_first_client_on_server ? local.docker_packages : [], local.nomad_packages)
+  nomad_server_commands  = concat(local.consul ? local.consul_start_commands : [], local.nomad_start_commands)
+
 }

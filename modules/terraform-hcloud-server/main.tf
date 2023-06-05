@@ -17,26 +17,27 @@ resource "hcloud_server" "host" {
   datacenter   = var.datacenter
   ssh_keys     = var.ssh_key_ids
   firewall_ids = var.firewall_ids
+  user_data    = data.cloudinit_config.cloudinit_config.rendered
+
   public_net {
     ipv4_enabled = var.public_ipv4
-    ipv6_enabled = ! var.public_ipv4
-    ipv4 = var.public_ipv4 ? hcloud_primary_ip.public_ip.id : null
-    ipv6 = var.public_ipv4 ? null : hcloud_primary_ip.public_ip.id
+    ipv6_enabled = !var.public_ipv4
+    ipv4         = var.public_ipv4 ? hcloud_primary_ip.public_ip.id : null
+    ipv6         = var.public_ipv4 ? null : hcloud_primary_ip.public_ip.id
   }
 
-  connection {
-    user        = "root"
-    type        = "ssh"
-    timeout     = "15m"
-    host        = var.public_ipv4 ? self.ipv4_address : self.ipv6_address
-    private_key = var.ssh_private_key
-  }
-
-  provisioner "remote-exec" {
-    inline = var.setup_commands
-  }
 }
 
+data "cloudinit_config" "cloudinit_config" {
+  gzip          = false
+  base64_encode = true
+
+  part {
+    filename     = "cloud-config.yaml"
+    content_type = "text/cloud-config"
+    content      = local.cloudinit_yml
+  }
+}
 
 resource "hcloud_server_network" "servernetwork" {
   ip        = var.private_ip

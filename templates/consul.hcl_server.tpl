@@ -1,13 +1,14 @@
 datacenter = "${consul_dc}"
 data_dir = "/opt/consul"
-encrypt = "<consul.key>"
+encrypt = "${consul_gossip_key}"
 domain = "${consul_domain}"
+bind_addr = "${private_ip}"
 
 retry_join = ${consul_server_ips}
 
 tls {
    defaults {
-      ca_file = "/etc/consul.d/certs/${consul_domain}-agent-ca.pem"
+      ca_file = "/etc/consul.d/certs/${consul_dc}-${consul_domain}-agent-ca.pem"
       cert_file = "/etc/consul.d/certs/${consul_dc}-server-${consul_domain}-${index}.pem"
       key_file = "/etc/consul.d/certs/${consul_dc}-server-${consul_domain}-${index}-key.pem"
 

@@ -40,20 +40,20 @@ variable "server_type" {
   description = "Cloud server type"
 }
 
-variable "labels" {
-  type = map(string)
-  description = "Labels for module output"
-  default = {}
-}
-
-variable "setup_commands" {
+variable "cloudinit_packages" {
   type        = list(string)
-  description = "Setup commands for the server"
+  description = "Packages to be installed with cloudinit"
   default     = []
 }
 
-variable "ssh_private_key" {
-  type        = string
-  description = "SSH private key for ssh access"
-  sensitive   = true
+variable "cloudinit_files" {
+  type        = list(map(string))
+  description = "Files to be written using cloudinit during startup"
+  default     = []
+}
+
+variable "cloudinit_commands" {
+  type        = list(string)
+  description = "Comands to be executed using cloudinit during startup"
+  default     = []
 }
