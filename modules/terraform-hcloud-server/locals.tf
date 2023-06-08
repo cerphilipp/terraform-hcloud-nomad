@@ -8,6 +8,7 @@ locals {
       base64      = lookup(f, "base64", true)
       owner       = lookup(f, "owner", null)
       permissions = lookup(f, "permissions", null)
+      append      = lookup(f, "append", null)
       content     = lookup(f, "base64", true) ? base64encode(f.content) : f.content
   }]
 

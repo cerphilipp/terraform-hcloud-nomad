@@ -5,7 +5,8 @@ write_files:
 - path: ${f.path}
   %{ if f.base64 ~}encoding: b64%{ endif }
   content: ${f.content}
-  %{ if f.owner == null }owner: root:root%{ else ~}owner: ${f.owner}%{ endif ~}
+  %{ if f.owner == null }owner: root:root%{ else ~}owner: ${f.owner}%{ endif }
+  %{ if f.append != null ~}append: '${f.append}'%{ endif }
   %{ if f.permissions != null ~}permissions: '${f.permissions}'%{ endif }
 %{ endfor ~}
 

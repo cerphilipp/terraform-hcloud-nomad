@@ -56,6 +56,14 @@ module "nomad_server" {
       content = tls_private_key.nomad_key[each.value.cluster_index].private_key_pem
     },
     {
+      path    = "/etc/nomad.d/certs/${local.clusters[each.value.cluster_index].nomad_region}-cli-nomad.pem"
+      content = tls_locally_signed_cert.nomad_cli[each.value.cluster_index].cert_pem
+    },
+    {
+      path    = "/etc/nomad.d/certs/${local.clusters[each.value.cluster_index].nomad_region}-cli-nomad-key.pem"
+      content = tls_private_key.nomad_cli[each.value.cluster_index].private_key_pem
+    },
+    {
       path = "/etc/nomad.d/nomad.hcl"
       content = templatefile("${path.module}/templates/nomad.hcl.tpl",
         {
@@ -74,6 +82,16 @@ module "nomad_server" {
           nomad_server_ips = local.nomad_cluster_server_ips[each.value.cluster_index]
           private_ip       = each.value.private_ip
       })
+    },
+    {
+      path    = "/root/.bash_profile"
+      append  = true
+      content = <<EOF
+export NOMAD_ADDR="https://localhost:4646";
+export NOMAD_CACERT="/etc/nomad.d/certs/nomad-agent-ca.pem";
+export NOMAD_CLIENT_CERT="/etc/nomad.d/certs/${local.clusters[each.value.cluster_index].nomad_region}-cli-nomad.pem";
+export NOMAD_CLIENT_KEY="/etc/nomad.d/certs/${local.clusters[each.value.cluster_index].nomad_region}-cli-nomad-key.pem";
+      EOF
     }
   ])
 }

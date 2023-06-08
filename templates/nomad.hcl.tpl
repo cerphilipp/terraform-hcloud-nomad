@@ -16,3 +16,6 @@ tls {
   verify_server_hostname = true
   verify_https_client    = false
 }
+acl {
+  enabled = true
+}

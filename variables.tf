@@ -67,7 +67,7 @@ variable "nomad_first_client_on_server" {
 variable "only_public_ipv4_adresses" {
   type        = bool
   description = "If false some servers will use a public ipv6 address, may cause connection issues and break the module"
-  default     = false #true
+  default     = true
 }
 
 variable "ssh_public_key" {
@@ -85,4 +85,16 @@ variable "cert_ssh_private_key_file" {
   type        = string
   description = "SSH private key file to sign the certificates"
   sensitive   = true
+}
+
+variable "use_load_balancer" {
+  type        = bool
+  description = "Use a loadbalance to balance loads across nomad servers"
+  default     = true
+}
+
+variable "load_balancer_type" {
+  type        = string
+  description = "Load balancer Type"
+  default     = "lb11"
 }
