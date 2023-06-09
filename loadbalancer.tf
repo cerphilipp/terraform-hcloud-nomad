@@ -6,7 +6,7 @@ resource "hcloud_load_balancer" "nomad_server" {
 
   name               = "${each.value.name}-load-balancer"
   location           = each.value.location
-  load_balancer_type = var.load_balancer_type
+  load_balancer_type = local.load_balancer_type
 }
 
 resource "hcloud_load_balancer_network" "nomad_server" {

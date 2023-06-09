@@ -8,13 +8,13 @@ module "nomad_server" {
   for_each = local.nomad_servers_map
 
   server_name        = each.value.hostname
-  public_ipv4        = true
+  public_ipv4        = local.public_ipv4
   firewall_ids       = [hcloud_firewall.firewall.id]
   ssh_key_ids        = [hcloud_ssh_key.nomad_server_root_sshkey.id]
   datacenter         = each.value.datacenter
   subnet_id          = hcloud_network_subnet.subnets[each.value.cluster_index].id
   private_ip         = each.value.private_ip
-  server_type        = var.nomad_server_type
+  server_type        = local.nomad_server_type
   cloudinit_packages = local.nomad_server_packages
   cloudinit_commands = local.nomad_server_commands
   cloudinit_files = concat(local.consul ? [
@@ -78,7 +78,7 @@ module "nomad_server" {
       content = templatefile("${path.module}/templates/server.hcl.tpl",
         {
           gossip_key       = random_id.nomad_gossip_encryption_key.b64_std
-          server_count     = var.nomad_server_count
+          server_count     = local.nomad_server_count
           nomad_server_ips = local.nomad_cluster_server_ips[each.value.cluster_index]
           private_ip       = each.value.private_ip
       })
@@ -106,13 +106,13 @@ module "nomad_client" {
   for_each = local.nomad_clients_map
 
   server_name        = each.value.hostname
-  public_ipv4        = var.only_public_ipv4_adresses ? true : false
+  public_ipv4        = local.public_ipv4
   firewall_ids       = [hcloud_firewall.firewall.id]
   ssh_key_ids        = [hcloud_ssh_key.nomad_server_root_sshkey.id]
   datacenter         = each.value.datacenter
   subnet_id          = hcloud_network_subnet.subnets[each.value.cluster_index].id
   private_ip         = each.value.private_ip
-  server_type        = var.nomad_client_type
+  server_type        = local.nomad_client_type
   cloudinit_packages = local.nomad_client_packages
   cloudinit_commands = local.nomad_client_commands
   cloudinit_files = concat(local.consul ? [

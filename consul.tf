@@ -12,13 +12,13 @@ module "consul_server" {
   for_each = local.consul_servers_map
 
   server_name        = each.value.hostname
-  public_ipv4        = var.only_public_ipv4_adresses ? true : false
+  public_ipv4        = local.public_ipv4
   firewall_ids       = [hcloud_firewall.firewall.id]
   ssh_key_ids        = [hcloud_ssh_key.nomad_server_root_sshkey.id]
   datacenter         = each.value.datacenter
   subnet_id          = hcloud_network_subnet.subnets[each.value.cluster_index].id
   private_ip         = each.value.private_ip
-  server_type        = var.consul_server_type
+  server_type        = local.consul_server_type
   cloudinit_packages = local.consul_server_packages
   cloudinit_commands = local.consul_server_commands
   cloudinit_files = [
@@ -54,7 +54,7 @@ module "consul_server" {
       path = "/etc/consul.d/server.hcl"
       content = templatefile("${path.module}/templates/server.hcl_consul.tpl",
         {
-          consul_server_count = var.consul_server_count
+          consul_server_count = local.consul_server_count
       })
     }
   ]

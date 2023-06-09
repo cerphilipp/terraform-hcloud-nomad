@@ -4,58 +4,65 @@ variable "hcloud_token" {
   sensitive   = true
 }
 
-variable "nomad_cluster_count" {
-  type        = number
-  description = "Number of nomad clusters"
-  default     = 1
-}
-
-variable "cluster_locations" {
-  type        = list(string)
-  description = "locations of the clusters"
-  default     = ["fsn1", "nbg1", "hel1"]
+variable "cluster_location" {
+  type        = string
+  description = "locations of the cluster, currently possible locations: fsn1, nbg1, hel1,"
+  default     = "fsn1"
 }
 
 variable "consul_domain" {
   type        = string
   description = "Domain of the consul servers"
   default     = "consul"
+
+  validation {
+    condition     = can(regex("^[a-z]+$", var.consul_domain))
+    error_message = "consul_domain can only contain lower case letters"
+  }
+}
+
+variable "server_size" {
+  type        = string
+  description = "Possible values: test, small, medium, large"
+  default     = "small"
+
+  validation {
+    condition     = contains(["test", "small", "medium", "large"], var.server_size)
+    error_message = "server_size invalid! Possible values: test, small, medium, large"
+  }
 }
 
 variable "consul_server_count" {
   type        = number
-  description = "Number of consul servers per cluster"
+  description = "Number of consul servers, set to 0 if consul should not be used"
   default     = 1
-}
 
-variable "consul_server_type" {
-  type        = string
-  description = "Type of servers"
-  default     = "cpx11"
+  validation {
+    condition     = var.consul_server_count >= 0
+    error_message = "consul_server_count must at least have the value 0"
+  }
 }
 
 variable "nomad_server_count" {
   type        = number
-  description = "Number of nomad servers per cluster"
+  description = "Number of nomad servers"
   default     = 3
-}
 
-variable "nomad_server_type" {
-  type        = string
-  description = "Type of servers"
-  default     = "cpx11"
+  validation {
+    condition     = var.nomad_server_count > 0
+    error_message = "nomad_server_count must at least have the value 1"
+  }
 }
 
 variable "nomad_client_count" {
   type        = number
   description = "Number of nomad clients per server"
   default     = 1
-}
 
-variable "nomad_client_type" {
-  type        = string
-  description = "Type of servers"
-  default     = "cpx11"
+  validation {
+    condition     = var.nomad_client_count > 0
+    error_message = "nomad_client_count must at least have the value 1"
+  }
 }
 
 variable "nomad_first_client_on_server" {
@@ -64,10 +71,10 @@ variable "nomad_first_client_on_server" {
   default     = false
 }
 
-variable "only_public_ipv4_adresses" {
+variable "use_ipv6" {
   type        = bool
   description = "If false some servers will use a public ipv6 address, may cause connection issues and break the module"
-  default     = true
+  default     = false
 }
 
 variable "ssh_public_key" {
@@ -91,10 +98,4 @@ variable "use_load_balancer" {
   type        = bool
   description = "Use a loadbalance to balance loads across nomad servers"
   default     = true
-}
-
-variable "load_balancer_type" {
-  type        = string
-  description = "Load balancer Type"
-  default     = "lb11"
 }
